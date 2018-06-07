@@ -4,7 +4,6 @@ const program = require('commander')
 const kexec = require('kexec')
 const path = require('path')
 const untildify = require('untildify')
-const yaml = require('js-yaml')
 const fs = require('fs')
 const shell = require('shelljs')
 
@@ -20,7 +19,7 @@ const HOME_DIR = process.env[envKey.home]
 const CONFIG_DIR = process.env[envKey.config] || path.join(HOME_DIR, '.config')
 
 const pathResolve = target => path.resolve(untildify(target))
-const parseConfigName = target => target.split(path.sep).join('.')
+const parseConfigName = target => target.split(path.sep).join('-')
 const getTargetPath = target => pathResolve(path.join(HOME_DIR, target))
 const getTargetShellPath = target => path.join(`$${envKey.home}`, target)
 const getConfigFile = target => {

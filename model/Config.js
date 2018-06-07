@@ -22,8 +22,6 @@ class Config {
   }
 
   setDirectory(directory) {
-    // const value = directory.replace(this.basePath, '$MUXER_HOME/')
-
     this.data.start_directory = directory
   }
 
