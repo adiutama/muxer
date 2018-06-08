@@ -2,16 +2,21 @@
 
 const program = require('commander')
 
-const { createAction, startAction } = require('./action')
+const { createAction, openAction, closeAction } = require('./action')
 
 program
   .command('create <target>')
-  .description('Create workspace')
+  .description('Create new workspace')
   .action(createAction)
 
 program
-  .command('start <target...>')
-  .description('Start workspace')
-  .action(startAction)
+  .command('open <target...>')
+  .description('Open workspace')
+  .action(openAction)
+
+program
+  .command('close <target...>')
+  .description('Close workspace')
+  .action(closeAction)
 
 program.parse(process.argv)

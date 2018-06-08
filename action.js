@@ -58,14 +58,22 @@ const createAction = target => {
   })
 }
 
-const startAction = target => {
-  const configPath = target.reduce((carry, value) => {
+const openAction = target => {
+  const filename = target.reduce((carry, value) => {
     const file = getConfigFile(value)
 
     return carry + ' ' + file
   }, '')
 
-  kexec(`tmuxp load ${configPath}`)
+  kexec(`tmuxp load ${filename}`)
 }
 
-module.exports = { createAction, startAction }
+const closeAction = target => {
+  target.forEach(value => {
+    const session = parseConfigName(value)
+
+    shell.exec(`tmux kill-session -t ${session}`)
+  })
+}
+
+module.exports = { createAction, openAction, closeAction }
