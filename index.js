@@ -12,6 +12,7 @@ const {
 
 program
   .command('create <target>')
+  .option('-f, --force', 'Skip workspace editing after created')
   .description('Create new workspace')
   .action(createAction)
 
