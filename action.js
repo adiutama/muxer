@@ -26,6 +26,12 @@ const getConfigFile = target => {
     ext: '.yaml',
   })
 }
+const getActiveList = () =>
+  shell
+    .exec('tmux ls', { silent: true })
+    .stdout.replace(/(:.*)/, '')
+    .split('\n')
+    .filter(value => value)
 
 // Actions
 const createAction = target => {
@@ -34,7 +40,7 @@ const createAction = target => {
   const targetShellPath = getTargetShellPath(target)
   const configFile = getConfigFile(target)
 
-  const config = ConfigModel.fromTemplate(configName, targetShellPath)
+  const config = ConfigModel.fromTemplate(target, targetShellPath)
 
   shell.mkdir('-p', targetPath)
   shell.mkdir('-p', path.dirname(configFile))
@@ -68,11 +74,15 @@ const openAction = target => {
   kexec(`tmuxp load ${filename}`)
 }
 
-const closeAction = target => {
-  target.forEach(value => {
-    const session = parseConfigName(value)
+const closeAction = (target, opts) => {
+  if (!opts.all && !target.length) {
+    console.error('Please specify target path')
+  }
 
-    shell.exec(`tmux kill-session -t ${session}`)
+  let workspaces = opts.all ? getActiveList() : target
+
+  workspaces.forEach(value => {
+    shell.exec(`tmux kill-session -t ${value}`)
   })
 }
 

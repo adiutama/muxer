@@ -15,7 +15,8 @@ program
   .action(openAction)
 
 program
-  .command('close <target...>')
+  .command('close [target...]')
+  .option('-a, --all', 'Close all active workspace')
   .description('Close workspace')
   .action(closeAction)
 
