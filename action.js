@@ -64,6 +64,18 @@ const createAction = target => {
   })
 }
 
+const editAction = target => {
+  const filename = getConfigFile(target)
+
+  kexec(`\$EDITOR ${filename}`)
+}
+
+const listAction = () => {
+  console.log('Currently active workspaces:')
+
+  getActiveList().forEach(value => console.log('- ', value))
+}
+
 const openAction = target => {
   const filename = target.reduce((carry, value) => {
     const file = getConfigFile(value)
@@ -86,4 +98,10 @@ const closeAction = (target, opts) => {
   })
 }
 
-module.exports = { createAction, openAction, closeAction }
+module.exports = {
+  createAction,
+  editAction,
+  listAction,
+  openAction,
+  closeAction,
+}
