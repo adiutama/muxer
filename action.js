@@ -3,56 +3,36 @@ const path = require('path')
 const kexec = require('kexec')
 const shell = require('shelljs')
 const untildify = require('untildify')
+const { execSync } = require('child_process')
+
+const accessFile = require('./helper/accessFile')
+const writeFile = require('./helper/writeFile')
 
 const ConfigModel = require('./model/Config')
 
+// Variables
 const envKey = {
   home: 'MUXER_HOME',
   config: 'MUXER_CONFIG',
 }
 
-// Constant
 const HOME_DIR = process.env[envKey.home]
 const CONFIG_DIR = process.env[envKey.config] || path.join(HOME_DIR, '.config')
 
+// Methods
 const pathResolve = target => path.resolve(untildify(target))
-const parseConfigName = target => target.split(path.sep).join('-')
-const getTargetPath = target => pathResolve(path.join(HOME_DIR, target))
-const getTargetShellPath = target => path.join(`$${envKey.home}`, target)
+const getTargetDir = target => pathResolve(path.join(HOME_DIR, target))
 
-const getConfigFile = target => {
-  return path.format({
+const getConfigFile = target =>
+  path.format({
     dir: pathResolve(CONFIG_DIR),
-    name: parseConfigName(target),
+    name: target.replace(path.sep, '-'),
     ext: '.yaml',
-  })
-}
-
-const accessFile = filename =>
-  new Promise((resolve, reject) =>
-    fs.access(filename, err => {
-      if (err) {
-        resolve(filename)
-      } else {
-        reject(Error('Config file has already exists'))
-      }
-    })
-  )
-
-const writeFile = (filename, content) =>
-  new Promise((resolve, reject) => {
-    fs.writeFile(filename, content, err => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(filename)
-      }
-    })
   })
 
 const getActiveList = () =>
   shell
-    .exec('tmux ls', { silent: true })
+    .exec('tmux ls 2> /dev/null', { silent: true })
     .stdout.replace(/(:.*)/, '')
     .split('\n')
     .filter(value => value)
@@ -65,14 +45,13 @@ const editAction = target => {
 }
 
 const createAction = (target, opts) => {
-  const configName = parseConfigName(target)
-  const targetPath = getTargetPath(target)
-  const targetShellPath = getTargetShellPath(target)
   const configFile = getConfigFile(target)
+  const targetDir = getTargetDir(target)
+  const targetShortDir = targetDir.replace(HOME_DIR, `$${envKey.home}`)
 
-  const config = ConfigModel.fromTemplate(target, targetShellPath)
+  const config = ConfigModel.fromTemplate(target, targetShortDir)
 
-  shell.mkdir('-p', targetPath)
+  shell.mkdir('-p', targetDir)
   shell.mkdir('-p', path.dirname(configFile))
 
   accessFile(configFile)
@@ -94,9 +73,15 @@ const createAction = (target, opts) => {
 }
 
 const listAction = () => {
-  console.log('Currently active workspaces:')
+  const list = getActiveList()
 
-  getActiveList().forEach(value => console.log('- ', value))
+  if (!list.length) {
+    return console.error('No active workspace')
+  }
+
+  console.log('Active workspaces:')
+
+  list.forEach(value => console.log('- ', value))
 }
 
 const openAction = target => {
