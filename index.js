@@ -52,4 +52,8 @@ program
   .description('Close workspace')
   .action(emit('close'))
 
+if (!process.argv.slice(2).length) {
+  program.outputHelp()
+}
+
 program.parse(process.argv)
