@@ -1,41 +1,38 @@
 #!/usr/bin/env node
 
 const program = require('commander')
+const action = require('./action')
 
-const {
-  createAction,
-  editAction,
-  listAction,
-  openAction,
-  closeAction,
-} = require('./action')
+// Methods
+const emit = event => (target, opts) => action.emit(event, target, opts)
 
+// Main
 program
   .command('create <target>')
   .option('-f, --force', 'Skip workspace editing after created')
   .description('Create new workspace')
-  .action(createAction)
+  .action(emit('create'))
 
 program
   .command('edit <target>')
   .description('Edit workspace')
-  .action(editAction)
+  .action(emit('edit'))
 
 program
   .command('list')
   .alias('ls')
   .description('List active workspace')
-  .action(listAction)
+  .action(emit('list'))
 
 program
   .command('open <target...>')
   .description('Open workspace')
-  .action(openAction)
+  .action(emit('open'))
 
 program
   .command('close [target...]')
   .option('-a, --all', 'Close all active workspace')
   .description('Close workspace')
-  .action(closeAction)
+  .action(emit('close'))
 
 program.parse(process.argv)

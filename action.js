@@ -1,20 +1,18 @@
+const EventEmitter = require('events')
 const kexec = require('kexec')
 const shell = require('shelljs')
 
 const WorkspaceService = require('./service/WorkspaceService')
 
+// Variables
+const emitter = new EventEmitter()
+
 // Actions
-const editAction = target => {
-  const { configFile } = WorkspaceService.resolve(target)
-
-  kexec(`\$EDITOR ${configFile}`)
-}
-
-const createAction = (target, opts) => {
+emitter.on('create', (target, opts) => {
   WorkspaceService.create(target)
     .then(() => {
       if (!opts.force) {
-        editAction(target)
+        emitter.emit('edit', target)
       }
     })
     .catch(err => {
@@ -26,9 +24,15 @@ const createAction = (target, opts) => {
           return console.error(err.message)
       }
     })
-}
+})
 
-const listAction = () => {
+emitter.on('edit', target => {
+  const { configFile } = WorkspaceService.resolve(target)
+
+  kexec(`\$EDITOR ${configFile}`)
+})
+
+emitter.on('list', target => {
   const list = shell
     .exec('tmux ls 2> /dev/null', { silent: true })
     .stdout.replace(/(:.*)/, '')
@@ -42,16 +46,16 @@ const listAction = () => {
   console.log('Active workspaces:')
 
   list.forEach(value => console.log('- ', value))
-}
+})
 
-const openAction = target => {
+emitter.on('open', target => {
   const getDir = target => WorkspaceService.resolve(target).configFile
   const filename = target.map(value => getDir(value)).join(' ')
 
   kexec(`tmuxp load ${filename}`)
-}
+})
 
-const closeAction = (target, opts) => {
+emitter.on('close', (target, opts) => {
   if (!opts.all && !target.length) {
     console.error('Please specify target path')
   }
@@ -61,12 +65,6 @@ const closeAction = (target, opts) => {
   workspaces.forEach(value => {
     shell.exec(`tmux kill-session -t ${value}`)
   })
-}
+})
 
-module.exports = {
-  createAction,
-  editAction,
-  listAction,
-  openAction,
-  closeAction,
-}
+module.exports = emitter
