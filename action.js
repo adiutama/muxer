@@ -15,7 +15,12 @@ emitter.on('browse', () => {
 
 emitter.on('list', () => {
   WorkspaceService.list().then(list => {
+    if (!list.length) {
+      return console.log('No avaliable workspace.')
+    }
+
     console.log('Available workspace:')
+
     list.forEach(value => {
       console.log('-', value)
     })
