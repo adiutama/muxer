@@ -1,13 +1,13 @@
 const yaml = require('js-yaml')
 const path = require('path')
 
-class Config {
+class Workspace {
   constructor() {
     this.data = {}
   }
 
   static fromTemplate(name, directory) {
-    const instance = new Config()
+    const instance = new Workspace()
 
     instance.setName(name)
     instance.setDirectory(directory)
@@ -46,4 +46,4 @@ class Config {
   }
 }
 
-module.exports = Config
+module.exports = Workspace

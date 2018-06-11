@@ -1,61 +1,17 @@
-const fs = require('fs')
-const path = require('path')
 const kexec = require('kexec')
 const shell = require('shelljs')
-const untildify = require('untildify')
-const { execSync } = require('child_process')
 
-const accessFile = require('./helper/accessFile')
-const writeFile = require('./helper/writeFile')
-
-const ConfigModel = require('./model/Config')
-
-// Variables
-const envKey = {
-  home: 'MUXER_HOME',
-  config: 'MUXER_CONFIG',
-}
-
-const HOME_DIR = process.env[envKey.home]
-const CONFIG_DIR = process.env[envKey.config] || path.join(HOME_DIR, '.config')
-
-// Methods
-const pathResolve = target => path.resolve(untildify(target))
-const getTargetDir = target => pathResolve(path.join(HOME_DIR, target))
-
-const getConfigFile = target =>
-  path.format({
-    dir: pathResolve(CONFIG_DIR),
-    name: target.replace(path.sep, '-'),
-    ext: '.yaml',
-  })
-
-const getActiveList = () =>
-  shell
-    .exec('tmux ls 2> /dev/null', { silent: true })
-    .stdout.replace(/(:.*)/, '')
-    .split('\n')
-    .filter(value => value)
+const WorkspaceService = require('./service/WorkspaceService')
 
 // Actions
 const editAction = target => {
-  const filename = getConfigFile(target)
+  const { configFile } = WorkspaceService.resolve(target)
 
-  kexec(`\$EDITOR ${filename}`)
+  kexec(`\$EDITOR ${configFile}`)
 }
 
 const createAction = (target, opts) => {
-  const configFile = getConfigFile(target)
-  const targetDir = getTargetDir(target)
-  const targetShortDir = targetDir.replace(HOME_DIR, `$${envKey.home}`)
-
-  const config = ConfigModel.fromTemplate(target, targetShortDir)
-
-  shell.mkdir('-p', targetDir)
-  shell.mkdir('-p', path.dirname(configFile))
-
-  accessFile(configFile)
-    .then(() => writeFile(configFile, config.toString()))
+  WorkspaceService.create(target)
     .then(() => {
       if (!opts.force) {
         editAction(target)
@@ -73,7 +29,11 @@ const createAction = (target, opts) => {
 }
 
 const listAction = () => {
-  const list = getActiveList()
+  const list = shell
+    .exec('tmux ls 2> /dev/null', { silent: true })
+    .stdout.replace(/(:.*)/, '')
+    .split('\n')
+    .filter(value => value)
 
   if (!list.length) {
     return console.error('No active workspace')
@@ -85,7 +45,8 @@ const listAction = () => {
 }
 
 const openAction = target => {
-  const filename = target.map(value => getConfigFile(value)).join(' ')
+  const getDir = target => WorkspaceService.resolve(target).configFile
+  const filename = target.map(value => getDir(value)).join(' ')
 
   kexec(`tmuxp load ${filename}`)
 }
