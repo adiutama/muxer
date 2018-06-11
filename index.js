@@ -14,6 +14,13 @@ program
   .action(emit('list'))
 
 program
+  .command('remove <target...>')
+  .alias('rm')
+  .option('--keep-dir', 'Remove config file but keep the project directory.')
+  .description('Remove workspace')
+  .action(emit('remove'))
+
+program
   .command('create <target>')
   .option('-f, --force', 'Skip workspace editing after created')
   .description('Create new workspace')

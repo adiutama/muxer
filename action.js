@@ -1,6 +1,7 @@
 const EventEmitter = require('events')
 const kexec = require('kexec')
 const shell = require('shelljs')
+const trash = require('trash')
 
 const WorkspaceService = require('./service/WorkspaceService')
 
@@ -14,6 +15,22 @@ emitter.on('list', () => {
     list.forEach(value => {
       console.log('-', value)
     })
+  })
+})
+
+emitter.on('remove', (target, opts) => {
+  const progress = target.map(value => {
+    const { dir, configFile } = WorkspaceService.resolve(value)
+
+    if (opts.keepDir) {
+      return trash(configFile)
+    } else {
+      return trash([dir, configFile])
+    }
+  })
+
+  Promise.all(progress).then(() => {
+    console.log('Workspace has been successfully removed.')
   })
 })
 
