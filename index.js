@@ -8,6 +8,11 @@ const emit = event => (target, opts) => action.emit(event, target, opts)
 
 // Main
 program
+  .command('browse')
+  .description('Browse workspace directory')
+  .action(emit('browse'))
+
+program
   .command('list')
   .alias('ls')
   .description('List available workspace')

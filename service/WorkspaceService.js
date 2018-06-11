@@ -27,6 +27,8 @@ const resolveConfigFile = target =>
     ext: '.yaml',
   })
 
+const getHomePath = () => HOME_DIR
+
 const list = () => {
   return directoryList(CONFIG_DIR)
     .then(list => {
@@ -71,6 +73,7 @@ const create = target => {
 }
 
 module.exports = {
+  getHomePath,
   resolve,
   list,
   create,

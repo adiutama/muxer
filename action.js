@@ -9,6 +9,10 @@ const WorkspaceService = require('./service/WorkspaceService')
 const emitter = new EventEmitter()
 
 // Actions
+emitter.on('browse', () => {
+  shell.exec(`open ${WorkspaceService.getHomePath()}`)
+})
+
 emitter.on('list', () => {
   WorkspaceService.list().then(list => {
     console.log('Available workspace:')
