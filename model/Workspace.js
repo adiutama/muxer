@@ -6,19 +6,25 @@ class Workspace {
     this.data = {}
   }
 
-  static fromTemplate(name, directory) {
+  static load(data) {
     const instance = new Workspace()
+    const parsed = yaml.safeLoad(data)
 
-    instance.setName(name)
-    instance.setDirectory(directory)
-    instance.addWindow('editor', ['nvim .'], true)
-    instance.addWindow('shell', [null])
+    instance.set(parsed)
 
     return instance
   }
 
+  set(data) {
+    this.data = data
+  }
+
   setName(name) {
     this.data.session_name = name
+  }
+
+  getName() {
+    return this.data.session_name
   }
 
   setDirectory(directory) {

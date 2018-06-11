@@ -3,7 +3,9 @@ const untildify = require('untildify')
 const shell = require('shelljs')
 
 const accessFile = require('../helper/accessFile')
+const readFile = require('../helper/readFile')
 const writeFile = require('../helper/writeFile')
+const directoryList = require('../helper/directoryList')
 
 const Model = require('../model/Workspace')
 
@@ -24,6 +26,22 @@ const resolveConfigFile = target =>
     name: target.replace(path.sep, '-'),
     ext: '.yaml',
   })
+
+const list = () => {
+  return directoryList(CONFIG_DIR)
+    .then(list => {
+      const data = list.map(value => {
+        return readFile(path.join(CONFIG_DIR, value))
+      })
+
+      return Promise.all(data)
+    })
+    .then(list => {
+      return list.map(value => {
+        return Model.load(value).getName()
+      })
+    })
+}
 
 const resolve = target => {
   const dir = pathResolve(path.join(HOME_DIR, target))
@@ -54,5 +72,6 @@ const create = target => {
 
 module.exports = {
   resolve,
+  list,
   create,
 }

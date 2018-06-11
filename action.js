@@ -8,6 +8,15 @@ const WorkspaceService = require('./service/WorkspaceService')
 const emitter = new EventEmitter()
 
 // Actions
+emitter.on('list', () => {
+  WorkspaceService.list().then(list => {
+    console.log('Available workspace:')
+    list.forEach(value => {
+      console.log('-', value)
+    })
+  })
+})
+
 emitter.on('create', (target, opts) => {
   WorkspaceService.create(target)
     .then(() => {
@@ -32,7 +41,7 @@ emitter.on('edit', target => {
   kexec(`\$EDITOR ${configFile}`)
 })
 
-emitter.on('list', target => {
+emitter.on('active', target => {
   const list = shell
     .exec('tmux ls 2> /dev/null', { silent: true })
     .stdout.replace(/(:.*)/, '')

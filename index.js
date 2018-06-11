@@ -8,6 +8,12 @@ const emit = event => (target, opts) => action.emit(event, target, opts)
 
 // Main
 program
+  .command('list')
+  .alias('ls')
+  .description('List available workspace')
+  .action(emit('list'))
+
+program
   .command('create <target>')
   .option('-f, --force', 'Skip workspace editing after created')
   .description('Create new workspace')
@@ -19,10 +25,9 @@ program
   .action(emit('edit'))
 
 program
-  .command('list')
-  .alias('ls')
+  .command('active')
   .description('List active workspace')
-  .action(emit('list'))
+  .action(emit('active'))
 
 program
   .command('open <target...>')
